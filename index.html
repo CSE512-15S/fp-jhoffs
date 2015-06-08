@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <title>CSE512: Data Visualization</title>
+  <meta name="robots" content="index,follow" />
+  <link rel="stylesheet" type="text/css" 
+   href="http://courses.cs.washington.edu/courses/cse512/15sp/style.css"/>
+</head>
+
+<body>
+  <div class='content wider'>
+
+    <div class='title'>
+      <a href="http://courses.cs.washington.edu/courses/cse512/15sp/">
+        <strong>CSE512</strong></a>
+        Projects
+        <small>(Spring 2015)</small>
+    </div>
+    <br/>
+
+    <div class='pub' data-spy="scroll" data-target=".navbar">
+
+      <h1 class="title">Visualizing Vega's Scenegraph and User Interaction</h1>
+      <div class="authors">
+        <a>Jane Hoffswell</a>
+      </div>
+
+      <div class="figure">
+        <img src="summary.png" width="100%">
+        <div class="caption">Dynamic update of the scenegraph of an 
+          index chart based on end-user interaction.
+        </div>
+      </div>
+
+      <p>
+        Vega is a declarative visualization language that enables rapid 
+        iteration of visualizations and supports retargeting, while 
+        allowing designers to focus on visual encoding instead of 
+        low-level implementation details. However, these advantages 
+        come at the cost of effective debugging due to obfuscation of
+        the underlying program execution. To support debugging, this 
+        project augments the development process by visualizing the 
+        scenegraph in addition to the specification and visualization. 
+        End-user interaction and inspection of the visualization update 
+        the scenegraph to provide relevant context.
+      </p>
+      
+      <h2>Software</h2>
+      <p>
+        You can try Vega and the scenegraph visualization online 
+        <a href="main.html">here</a>.
+      </p>
+
+      <p>
+        The scenegraph is a tree representation of the final
+        visualization where nodes in the tree represent different
+        components of the output visualization. The tree is dynamically
+        updated as users interact with the visualization. The following
+        is a list of features in the scenegraph representation.
+      </p>
+
+      <h3>General Features</h3>
+
+      <strong>Data on Demand</strong>
+      <p>
+        The user can right-click nodes in the scenegraph to print the
+        corresponding data to the console.
+      </p>
+
+      <strong>Collapse/Expand</strong>
+      <p>
+        Selecting nodes in the scenegraph collapses or expands them.
+        Collapsed nodes are represented with a black border. The size
+        of collapsed nodes is indicative of the number of hidden
+        descendants of that node.
+      </p>
+      <p>
+        The control buttons in the "Scenegraph" bar allow the user to
+        rapidly expand or collapse nodes. "Show All" expands all nodes
+        to show all nodes in the tree. "Auto Collapse" collapses nodes
+        for which the number of children exceeds some threashold.
+      </p>
+
+      <strong>Modify Scenegraph</strong>
+      <p>
+        "Remove Axis" and "Remove Legend" removes nodes corresponding
+        to these components from the scenegraph visualization. These
+        nodes are <emph>not</emph> removed from the visualization, but
+        are simply hidden from the user's view of the scenegraph. The
+        user can select these buttons again to restore the nodes.
+      </p>
+
+      <h3>Interaction Mode</h3>
+      <p>
+        While in the "Interaction" mode, the user can complete end-
+        user interactions for the Vega visualization. As the user
+        interacts with the visualization, the scenegraph is grayed out.
+        Once the user stops interacting, the scenegraph is updated to
+        show how the final state has changed from the initial state of
+        the visualization.
+      </p>
+      <p>
+        The color of the node (as shown in the legend) is representative 
+        of the percentage of hidden descendant nodes that have changed 
+        in some way. The stroke color of the node denotes the update
+        status of that node (either 
+        <span style="color:orange;">modified</span>, 
+        <span style="color:limegreen;">added</span>,
+        or <span style="color:red;">removed</span>.
+      </p>
+
+      <h3>Inspection Mode</h3>
+      <p>
+        The user can select the "Inspect" button to change from the
+        interact mode to instead inspect elements of the visualization.
+        In this mode, end-user interaction is disabled. Instead, when
+        the user clicks the visualization, all nodes containing the
+        point are highlighted in the scenegraph in 
+        <span style="color:pink;">pink</span>.
+      </p>
+
+      
+
+      <h2>Materials</h2>
+      <div class="links">
+        <a href="final/paper-jhoffs.pdf">PDF</a>
+        |
+        <a href="final/poster-jhoffs.pdf">Poster</a>
+        |
+        <a href="https://github.com/CSE512-15S/fp-jhoffs">Code</a>
+      </div>
+
+      <div class='footer'>
+        <a href='http://cs.washington.edu'>Computer Science &amp; Engineering</a> -
+        <a href='http://www.washington.edu'>University of Washington</a>
+      </div>
+    </div>
+    <br/>
+    <br/>
+
+
+  </div>
+</body>
+
+</html>
