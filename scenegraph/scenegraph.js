@@ -57,6 +57,7 @@ function initialize(ved) {
   computeTreeStructure();
   // Draw the scenegraph.
   drawScenegraph();
+  drawLegend();
   initialized = false;
 } // end initialize
 
@@ -72,6 +73,7 @@ function update(node) {
   // Draw the scenegraph
   computeTreeStructure();
   drawScenegraph();
+  drawLegend();
 } // end update
 
 function redraw(node) {
@@ -84,6 +86,7 @@ function redraw(node) {
   // Draw the scenegraph
   computeTreeStructure();
   drawScenegraph();
+  drawLegend();
 } // end redraw
 
 function updateInspection(node) {
@@ -97,7 +100,6 @@ function updateInspection(node) {
   // Draw the scenegraph
   computeTreeStructure();
   drawScenegraph();
-  // Disable end-user interaction
 } // end updateInspection
 
 /*************************************************************/
@@ -356,8 +358,6 @@ function processDiff() {
 function dataChanged(oldDataObj, newDataObj) {
   var somethingChanged = false;
   // TODO: see if we can break out of this loop early.
-  // TODO: if the element is an object, need to recursively
-  //       check it. can probably just use this function?
   Object.keys(newDataObj).forEach(function(key) {
     if(newDataObj[key] instanceof Object &&
        dataChanged(newDataObj[key], oldDataObj[key])) {
@@ -411,7 +411,6 @@ function drawScenegraph() {
 
   drawNodes(node);
   drawEdges(link);
-  drawLegend();
 
   // Stash the old positions for transition.
   nodes.forEach(function(d) {
@@ -429,10 +428,10 @@ function drawNodes(node) {
         //return "translate(" + source.x0 + "," + source.y0 + ")"; 
       })
       .on("contextmenu", function(d) {
-        // TODO: this isn't working anymore?
-        if(d.data) console.log(d.name + " data:", d.data)
-        //if (d.bounds) console.log(d.name + " bounds:", d.bounds)
-        else console.log(d.name)
+        d3.event.preventDefault();
+        if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
+        //if (d.bounds) console.log("Node ID: ", d.name, "\nbounds:", d.bounds);
+        else console.log("Node ID: ", d.name);
       })
       .on("click", toggle);
 
@@ -508,7 +507,14 @@ function drawEdges(link) {
   // Enter any new links at the parent's previous position.
   link.enter().insert("path", "g")
       .attr("class", "link")
-      .style("stroke", "lightgray")
+      .style("stroke", function(d) {
+        if(d.source.userSelect && d.target.userSelect) return "pink";
+        return "lightgray";
+      })
+      .style("stroke-width", function(d) {
+        if(d.source.userSelect && d.target.userSelect) return 3;
+        return 1;
+      })
       .style("stroke-opacity", 0.5)
       .style("fill", "none")
       .attr("d", function(d) {
@@ -545,6 +551,7 @@ function drawLegend() {
 
   // TODO: appending legend to the scenegraph, is that what we want?
   var caption = d3.select("#scenegraph").select("svg").append("g")
+      .attr("id", "legend")
       .attr("transform", "translate(5,30)")
       .style("position", "relative");
 
@@ -707,8 +714,7 @@ function updateScenegraph() {
 
 function getOffset(currentNode, point) {
   newData.forEach(function(node) {
-    if(node.name == currentNode.parent && 
-       !dataChanged(node.bounds, currentNode.bounds)) {
+    if(node.name == currentNode.parent) {
       //console.log("updating offset")
       point.x += node.bounds.x1;
       point.y += node.bounds.y1;
@@ -716,7 +722,7 @@ function getOffset(currentNode, point) {
     }
   });
   return point;
-}
+} // end getOffset
 
 function enableInspection() {
   // TODO: when padding is auto, not sure how to resolve the
@@ -805,13 +811,12 @@ function inspect() {
     update(context.root);
     context.view._handler._handlers = handlers;
   } else {
-    // TODO: remove transition when interacting in the inspect mode
     d3.select("#btn_scene_inspect")[0][0].value = "Interact";
+    clearTimeout(timer);
     inspection = true;
     handlers = context.view._handler._handlers;
     context.view._handler._handlers = {};
     enableInspection(); 
-    update(context.root);
-       
+    updateInspection(context.root); 
   }
 } // end inspect
