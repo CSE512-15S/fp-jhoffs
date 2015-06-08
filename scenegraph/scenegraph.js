@@ -431,8 +431,8 @@ function drawNodes(node, source) {
       })
       .on("contextmenu", function(d) {
         d3.event.preventDefault();
-        //if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
-        if (d.bounds) console.log("Node ID: ", d.name, "\nbounds:", d.bounds);
+        if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
+        //if (d.bounds) console.log("Node ID: ", d.name, "\nbounds:", d.bounds);
         else console.log("Node ID: ", d.name);
       })
       .on("click", toggle);
