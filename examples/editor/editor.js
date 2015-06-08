@@ -81,7 +81,7 @@ ved.resize = function(event) {
 
 ved.init = function() {
   // Set base directory
-  vg.config.load.baseURL = "../";
+  vg.config.load.baseURL = "examples/";
   
   // Specification drop-down menu               
   var sel = d3.select("#sel_spec");
@@ -94,7 +94,7 @@ ved.init = function() {
   st.selectAll("option.spec")
     .data(STATIC_SPECS)
    .enter().append("option")
-    .attr("value", function(d) { return "../spec/"+d+".json"; })
+    .attr("value", function(d) { return "examples/spec/"+d+".json"; })
     .text(function(d) { return d; });
 
   var interactive = sel.append("optgroup")
@@ -103,7 +103,7 @@ ved.init = function() {
   interactive.selectAll("option.spec")
     .data(INTERACTIVE_SPECS)
    .enter().append("option")
-    .attr("value", function(d) { return "../spec/"+d+".json"; })
+    .attr("value", function(d) { return "examples/spec/"+d+".json"; })
     .text(function(d) { return d; });
 
   // Renderer drop-down menu

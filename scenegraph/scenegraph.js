@@ -361,10 +361,10 @@ function dataChanged(oldDataObj, newDataObj) {
   Object.keys(newDataObj).forEach(function(key) {
     if(newDataObj[key] instanceof Object &&
        dataChanged(newDataObj[key], oldDataObj[key])) {
-      console.log(newDataObj[key], "!=", oldDataObj[key])
+      //console.log(newDataObj[key], "!=", oldDataObj[key])
       somethingChanged = true;
     } else if(newDataObj[key] != oldDataObj[key]) {
-      console.log(newDataObj[key], "!=", oldDataObj[key])
+      //console.log(newDataObj[key], "!=", oldDataObj[key])
       somethingChanged = true;
     }
   });
