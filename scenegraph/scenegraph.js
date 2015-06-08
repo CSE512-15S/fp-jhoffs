@@ -745,7 +745,7 @@ function enableInspection() {
         //obj = getOffset(node, obj);
         var point = new vg.Bounds().set(obj.x, obj.y, obj.x, obj.y);
         //console.log("Modified point: (", obj.x, ",", obj.y, ")")
-        if(node.bounds.encloses(point)) {
+        if(node.bounds && node.bounds.encloses(point)) {
           //console.log(p, " is in ", node.bounds, "?");
           //console.log("it matches!")
           node.userSelect = true;
@@ -819,6 +819,14 @@ function inspect() {
     handlers = context.view._handler._handlers;
     context.view._handler._handlers = {};
     enableInspection(); 
+    // TODO: This is supposed to reset all the colors of the nodes
+    //       but there seems to be a bug where one of the leaf nodes
+    //       is not recolored properly (see index chart). I think it 
+    //       is happening because the recolor is just recomputing the
+    //       diff and the diff returns false for NaN == NaN which seems
+    //       so that node is always modified. Note that the index line
+    //       has a width of null (so maybe this is where the problem
+    //       is cropping up).
     update(context.root); // Remove node colors.
     d3.select("#legend").remove();
   }
