@@ -27,7 +27,7 @@ var initialized = false;
 /*************************************************************/
 var AUTO_COLLAPSE_THREASHOLD = 7;
 var DELAY = 1000;
-var TRANSITION_DELAY = 400;
+var TRANSITION_DELAY = 0;
 var TRANSITION_DURATION = 750;
 var i = 0; // TODO: figure out if this is used.
 
@@ -55,13 +55,15 @@ function initialize(ved) {
   extractScenegraph(context.root);
   computeDescendants();
   computeTreeStructure();
+  updateTreeSize();
   // Draw the scenegraph.
-  drawScenegraph();
+  drawScenegraph(root);
   drawLegend();
-  initialized = false;
+  initialized = true;
 } // end initialize
 
 function update(node) {
+  initialized = false;
   // Extract the new data from the scenegraph.
   saveOldData();
   extractScenegraph(node);
@@ -72,8 +74,10 @@ function update(node) {
   maintainCollapse();
   // Draw the scenegraph
   computeTreeStructure();
-  drawScenegraph();
+  updateTreeSize();
+  drawScenegraph(root);
   drawLegend();
+  initialized = true;
 } // end update
 
 function redraw(node) {
@@ -85,28 +89,27 @@ function redraw(node) {
   maintainCollapse();
   // Draw the scenegraph
   computeTreeStructure();
-  drawScenegraph();
-  drawLegend();
+  updateTreeSize();
 } // end redraw
 
 function updateInspection(node) {
+  initialized = false;
   // Extract the new data from the scenegraph.
   saveOldData();
   newData = oldData.slice(0);
-  //extractScenegraph(node);
-  //computeDescendants();
   // Maintain the collapse level of the scenegraph.
   maintainCollapse();
   // Draw the scenegraph
   computeTreeStructure();
-  drawScenegraph();
+  updateTreeSize();
+  drawScenegraph(root);
+  initialized = true;
 } // end updateInspection
 
 /*************************************************************/
 /******************** Get Scenegraph Data ********************/
 /*************************************************************/
 
-// TODO: figure out if this needs to do anything else.
 function saveOldData() {
   oldData = newData;
   newData = null
@@ -393,8 +396,8 @@ function updateTreeSize() {
   root.y0 = height / 2;
 } // end updateTreeSize
 
-function drawScenegraph() {
-  updateTreeSize();
+function drawScenegraph(source) {
+  //updateTreeSize();
   partialCollapse(root);
 
   // Compute the new tree layout.
@@ -404,13 +407,13 @@ function drawScenegraph() {
   
   // Update the nodes...
   var node = svg.selectAll("g.node")
-      .data(nodes, function(d) { return d.id || (d.id = ++i); });
+      .data(nodes, function(d) { return d.name || (d.id = ++i); });
   // Update the links...
   var link = svg.selectAll("path.link")
-      .data(links, function(d) { return d.target.id; });
+      .data(links, function(d) { return d.target.name; });
 
-  drawNodes(node);
-  drawEdges(link);
+  drawNodes(node, source);
+  drawEdges(link, source);
 
   // Stash the old positions for transition.
   nodes.forEach(function(d) {
@@ -419,18 +422,17 @@ function drawScenegraph() {
   });
 } // end drawScenegraph
 
-function drawNodes(node) {
+function drawNodes(node, source) {
   // Enter any new nodes at the parent's previous position.
   var nodeEnter = node.enter().append("g")
       .attr("class", "node")
       .attr("transform", function(d) { 
-        return "translate(" + root.x0 + "," + root.y0 + ")";
-        //return "translate(" + source.x0 + "," + source.y0 + ")"; 
+        return "translate(" + source.x0 + "," + source.y0 + ")";         
       })
       .on("contextmenu", function(d) {
         d3.event.preventDefault();
-        if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
-        //if (d.bounds) console.log("Node ID: ", d.name, "\nbounds:", d.bounds);
+        //if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
+        if (d.bounds) console.log("Node ID: ", d.name, "\nbounds:", d.bounds);
         else console.log("Node ID: ", d.name);
       })
       .on("click", toggle);
@@ -474,12 +476,8 @@ function drawNodes(node) {
       })
       .style("stroke-width", function(d) { return d._children ? 1.5 : 1; })
       .style("fill", function(d) { 
-        if(d.userSelect) {
-          return "pink";
-        }
-        if(aggregateChange) {
-          return color(getColorValue(d));
-        }
+        if(d.userSelect) return "pink";
+        if(aggregateChange) return color(getColorValue(d));
         return color(0);
       });
 
@@ -491,8 +489,8 @@ function drawNodes(node) {
       .delay(TRANSITION_DELAY)
       .duration(TRANSITION_DURATION)
       .attr("transform", function(d) { 
-        return "translate(" + root.x + "," + root.y + ")";
-        //return "translate(" + source.x + "," + source.y + ")";
+        //return "translate(" + root.x + "," + root.y + ")";
+        return "translate(" + source.x + "," + source.y + ")";
       })
       .remove();
 
@@ -503,7 +501,7 @@ function drawNodes(node) {
       .style("fill-opacity", 1e-6);
 } // end drawNodes
 
-function drawEdges(link) {
+function drawEdges(link, source) {
   // Enter any new links at the parent's previous position.
   link.enter().insert("path", "g")
       .attr("class", "link")
@@ -518,8 +516,7 @@ function drawEdges(link) {
       .style("stroke-opacity", 0.5)
       .style("fill", "none")
       .attr("d", function(d) {
-        var o = {x:root.x0, y:root.y0};
-        //var o = {x: source.x0, y: source.y0};
+        var o = {x: source.x0, y: source.y0};       
         return diagonal({source: o, target: o});
       });
 
@@ -549,7 +546,6 @@ function drawLegend() {
   var legendRectSize = 10;
   var legendSpacing = 2;
 
-  // TODO: appending legend to the scenegraph, is that what we want?
   var caption = d3.select("#scenegraph").select("svg").append("g")
       .attr("id", "legend")
       .attr("transform", "translate(5,30)")
@@ -588,7 +584,7 @@ function getNodeSize(d) {
   // TODO: fine-tune this more.
   if(d._children) {
     var num = numDescendants[d.name];
-    if(num >= AUTO_COLLAPSE_THREASHOLD * 8) return 7.5;
+    if(num >= AUTO_COLLAPSE_THREASHOLD * 6) return 7.5;
     if(num >= AUTO_COLLAPSE_THREASHOLD * 4) return 6.5;
     if(num >= AUTO_COLLAPSE_THREASHOLD * 2) return 5.5;
     return 4.5;
@@ -619,7 +615,7 @@ function toggle(d) {
   // Toggle collapsed status of node.
   if (d.children) collapse(d);
   else expand(d);
-  drawScenegraph(); // TODO: reincorporate source?
+  drawScenegraph(d);
 } // end toggle
 
 function partialCollapse(d) {
@@ -767,18 +763,19 @@ function enableInspection() {
 // Show all nodes from button click.
 function showAll() {
   expandAll(root);
-  drawScenegraph();
+  drawScenegraph(root);
 } // end showAll
 
 function autoCollapse() {
   expandAll(root);
   resetCollapsed(root);
   partialCollapse(root);
-  drawScenegraph();
+  drawScenegraph(root);
 } // end autoCollapse
 
-// TODO: figure out how to support transitions
+// TODO: figure out how to support BETTER transitions
 function toggleAxis() {
+  
   var button = d3.select("#btn_scene_toggleAxis")[0][0];
   if(button.value == "Remove Axis") {
     button.value = "Show Axis";
@@ -787,11 +784,16 @@ function toggleAxis() {
     button.value = "Remove Axis";
     showAxis = true;
   }
+  var oldX0 = root.x0;
+  var oldY0 = root.y0;
   redraw(context.root);
-  drawScenegraph();
+  root.x0 = oldX0;
+  root.y0 = oldY0;
+  drawScenegraph(root);
+  drawLegend();
 } // end toggleAxis
 
-// TODO: figure out how to support transitions
+// TODO: figure out how to support BETTER transitions
 function toggleLegend() {
   var button = d3.select("#btn_scene_toggleLegend")[0][0];
   if(button.value == "Remove Legend") {
@@ -817,6 +819,7 @@ function inspect() {
     handlers = context.view._handler._handlers;
     context.view._handler._handlers = {};
     enableInspection(); 
-    updateInspection(context.root); 
+    update(context.root); // Remove node colors.
+    d3.select("#legend").remove();
   }
 } // end inspect
