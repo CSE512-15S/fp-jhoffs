@@ -34,16 +34,19 @@
       </div>
 
       <p>
-        Vega is a declarative visualization language that enables rapid 
-        iteration of visualizations and supports retargeting, while 
-        allowing designers to focus on visual encoding instead of 
-        low-level implementation details. However, these advantages 
-        come at the cost of effective debugging due to obfuscation of
-        the underlying program execution. To support debugging, this 
-        project augments the development process by visualizing the 
-        scenegraph in addition to the specification and visualization. 
-        End-user interaction and inspection of the visualization update 
-        the scenegraph to provide relevant context.
+        Vega is a declarative visualization language that enables 
+        rapid iteration while allowing designers to focus on visual 
+        encoding instead of low-level implementation details. However, 
+        the separation of specification from execution inhibits debugging 
+        effectiveness due to obfuscation of the underlying code. Visualizing 
+        Vega's scenegraph enables rapid exploration of the visualization 
+        structure and underlying data. As end-users interact with the 
+        visualization, the scenegraph updates dynamically to show changes 
+        in the underlying data. Inspection of the visualization enables 
+        users to identify related elements in the scenegraph. Visually 
+        surfacing system internals enhances user understanding and 
+        facilitates the identification of errors that would otherwise 
+        require complex debugging cycles.
       </p>
       
       <h2>Software</h2>
@@ -119,8 +122,6 @@
         point are highlighted in the scenegraph in 
         <span style="color:pink;">pink</span>.
       </p>
-
-      
 
       <h2>Materials</h2>
       <div class="links">

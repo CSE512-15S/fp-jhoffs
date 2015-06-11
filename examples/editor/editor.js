@@ -1,7 +1,8 @@
 var ved = {
   version: 0.1,
   data: undefined,
-  renderType: "canvas"
+  renderType: "canvas",
+  visUpate: false
 };
 
 ved.params = function() {
@@ -21,6 +22,7 @@ ved.select = function() {
   if (idx > 0) {
     d3.xhr(uri, function(error, response) {
       d3.select("#spec").property("value", response.responseText);
+      ved.visUpdate = false;
       ved.parse();
     });
   } else {
@@ -70,8 +72,12 @@ ved.parse = function() {
 
 ved.drawScenegraph = function() {
   d3.select("#scenegraph").selectAll("*").remove();
-  initialize(ved);
-  // TODO: only call initialze when the dropdown is selected
+  if(ved.visUpdate == false) {
+    initialize(ved);
+    ved.visUpdate = true;
+  } else {
+    update(ved.root);
+  } 
 }
 
 ved.resize = function(event) {

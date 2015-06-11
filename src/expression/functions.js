@@ -6,7 +6,7 @@ module.exports = function(codegen) {
     var obj = codegen(args[0]);
     if (cast) {
       obj = cast + "(" + obj + ")";
-      if (dl.startsWith(cast, "new ")) obj = "(" + obj + ")";
+      if (datalib.startsWith(cast, "new ")) obj = "(" + obj + ")";
     }
     return obj + "." + name + (type < 0 ? "" : type === 0
       ? "()"

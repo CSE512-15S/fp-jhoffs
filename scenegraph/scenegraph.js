@@ -3,6 +3,7 @@
 /*************************************************************/
 var timer; // Responsible for throttling the udpate.
 var context, handlers;
+var global;
 
 // Data
 var newData, oldData, treeData, root;
@@ -203,7 +204,7 @@ function getDataObj(node) {
  * GROUP: <name>, <parent>, <type>, <bounds>
  * ITEM:  <name>, <parent>, <data>, <bounds>
  */
-function extractScenegraph(node) {
+function extractScenegraphOLD(node) {
   // Save information about root node and prepare for tree traversal
   var nodes = [];
   nodes.push({"name": getID(node), "type": node.marktype, "parent": "null", "bounds": node.bounds});
@@ -229,6 +230,54 @@ function extractScenegraph(node) {
                  "parent": getID(currentNode.mark),
                  "data": getDataObj(currentNode),
                  "bounds": currentNode.bounds};
+      nodes.push(obj);
+
+      if(showAxis && currentNode.axisItems != undefined && currentNode.axisItems.length != 0) {
+        nodesToCheck = nodesToCheck.concat(currentNode.axisItems);
+      }
+      if(showLegend && currentNode.legendItems != undefined && currentNode.legendItems.length != 0) {
+        nodesToCheck = nodesToCheck.concat(currentNode.legendItems);
+      }
+      if(currentNode.items != undefined && currentNode.items.length != 0) {
+        nodesToCheck = nodesToCheck.concat(currentNode.items);
+      }
+    }
+  } // end while
+
+  newData = nodes.slice(0); // TODO: figure out if slice is necessary.
+} // end extractScenegraph
+
+function extractScenegraph(node) {
+  // Save information about root node and prepare for tree traversal
+  var nodes = [];
+  var obj = {"name": getID(node), "parent": "null", 
+             "type": node.marktype, "bounds": node.bounds,
+             "node": node};
+  nodes.push(obj);
+  var nodesToCheck = node.items.slice(0);
+  padding = node.bounds; // TODO: Save bounds for future computation?
+
+  // Traverse scenegraph until all nodes have been reached
+  while(nodesToCheck.length != 0) {
+    var currentNode = nodesToCheck.pop();
+    
+    // If the CURRENT node is a GROUP mark.
+    if(currentNode.marktype != undefined) {
+      var obj = {"name": getID(currentNode), 
+                 "parent": getID(currentNode.group),
+                 "type": currentNode.marktype,
+                 "bounds": currentNode.bounds,
+                 "node": currentNode};
+      nodes.push(obj);
+      nodesToCheck = nodesToCheck.concat(currentNode.items);
+    
+    // If the CURRENT node is an ITEM.
+    } else {
+      var obj = {"name": getID(currentNode),
+                 "parent": getID(currentNode.mark),
+                 "data": getDataObj(currentNode),
+                 "bounds": currentNode.bounds,
+                 "node": currentNode};
       nodes.push(obj);
 
       if(showAxis && currentNode.axisItems != undefined && currentNode.axisItems.length != 0) {
@@ -277,7 +326,8 @@ function computeDescendants() {
 
 function computeTreeStructure() {
   // Structure the nodes appropriately.
-  var data = JSON.parse(JSON.stringify(newData)); // Copies the object.
+  var data = newData;
+  //var data = JSON.parse(JSON.stringify(newData)); // Copies the object.
   var dataMap = data.reduce(function(map, node) {
     map[node.name] = node;
     return map;
@@ -308,6 +358,13 @@ function maintainCollapse() {
 } // end maintainCollapse
 
 function processDiff() {
+
+  // TODO: this process function doesn't work when not copying the
+  //       data structure in the tree construction phase.
+  //       however, not copying the data provides better info about
+  //       the nodes. Need to figure out how to deal with this
+  //       tradeoff properly...
+
   // Record the number of children that change (are modified
   // in some way) for each parent.
   var map = {};
@@ -341,7 +398,9 @@ function processDiff() {
     if(newNode.length == 0 && (!oldNode.status || oldNode.status != "removed")) {
       oldNode.status = "removed";
       newData.push(oldNode);
-      map[oldNode.parent] = (map[oldNode.parent] + 1) || 1;
+      var parent = oldNode.parent;
+      if(parent instanceof Object) parent = parent.name;
+      map[parent] = (map[parent] + 1) || 1;
     }
   });
 
@@ -431,9 +490,11 @@ function drawNodes(node, source) {
       })
       .on("contextmenu", function(d) {
         d3.event.preventDefault();
-        if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
+        global = d;
+        console.log(global);
+        //if(d.data) console.log("Node ID: ", d.name, "\ndata:", d.data);
         //if (d.bounds) console.log("Node ID: ", d.name, "\nbounds:", d.bounds);
-        else console.log("Node ID: ", d.name);
+        //else console.log("Node ID: ", d.name);
       })
       .on("click", toggle);
 
@@ -751,6 +812,17 @@ function enableInspection() {
           node.userSelect = true;
         }
       });
+
+      // TODO: pick seems to be able to correctly identify marks such
+      //       as rect and points but isn't returning info about axis
+      //       or labels.
+      /*var pad = context.view._handler._padding,
+        b = evt.target.getBoundingClientRect(),
+        x = evt.clientX - b.left,
+        y = evt.clientY - b.top,
+        scene = context.view._handler._model.scene(),
+        p = context.view._handler.pick(scene, x, y, x-pad.left, y-pad.top);
+      console.log(p)*/
       updateInspection(context.root);
     }
   });
